@@ -16,20 +16,24 @@ window.resizable(False, False)
 def show_dashboard():
     dashboard_frame.place(x=200, y=0)
     settings_frame.place_forget()
+    transaction_frame.place_forget()
 
 def show_transactions():
-    print("Transactions shown")
+    transaction_frame.place(x=200, y=0)
+    dashboard_frame.place_forget()
+    settings_frame.place_forget()
 
 def show_settings():
     settings_frame.place(x=200, y=0)
     dashboard_frame.place_forget()
+    transaction_frame.place_forget()
 
 
 # Sidebar
 sidebar = ctk.CTkFrame(window, fg_color='#1375d0', width=200,corner_radius=0)
 sidebar.pack(side='left', fill='y', padx=(0, 10))
 sidebar.pack_propagate(False)
-button_font = ctk.CTkFont(family='Segoe UI', size=18, weight='bold')
+button_font = ctk.CTkFont(family='Segoe UI', size=17, weight='bold')
 sidebar_buttons = {}
 ACTIVE_COLOR = '#4899f0'
 INACTIVE_COLOR = '#1375d0'
@@ -82,7 +86,7 @@ sidebar_buttons['settings'] = settings_btn
 # Dashboard Frame
 dashboard_frame = ctk.CTkFrame(window, fg_color='white', width=725, height=500)
 dashboard_frame.place(x=200, y=0)
-Label = ctk.CTkLabel(dashboard_frame, text="Welcome! user name", font=ctk.CTkFont(size=20, weight="bold"))
+Label = ctk.CTkLabel(dashboard_frame, text="Welcome! Saurav Subedi", font=ctk.CTkFont(size=20, weight="bold"))
 Label.place(x=80, y=65)
 # User Icon
 user_img = ['img/user_icon/user1.png', 'img/user_icon/user2.png', 'img/user_icon/user3.png', 'img/user_icon/user4.png', 'img/user_icon/user5.png']
@@ -256,9 +260,137 @@ contact_btn = ctk.CTkButton(support_frame, text="Contact Support", font=ctk.CTkF
                              command=lambda: print("Contact Support Clicked"))
 contact_btn.pack(padx=20, pady=(0, 10), anchor='w')
 
+# transaction function
+def send_function():
+    print("Send Money Function Triggered")
 
+#---Transaction Frame---#
+transaction_frame = ctk.CTkFrame(window, fg_color='white', width=725, height=500)
+transaction_frame.place(x=200, y=0)
+# Transaction Label
+transaction_label = ctk.CTkLabel(transaction_frame, text="Transactions", font=ctk.CTkFont(family='Segoe UI',size=45, weight="bold"), text_color='#1375d0')
+transaction_label.place(x=80, y=65)
+logo_label = ctk.CTkLabel(transaction_frame, image=logo_img, text="")
+logo_label.place(x=400, y=-50)
+# send money 
+icon_img = ctk.CTkImage(light_image=Image.open('img/icon/send.png'), size=(40, 40))
+send_button = ctk.CTkButton(
+    transaction_frame,text="Send Money",
+    font=ctk.CTkFont(size=14, weight="bold"),
+    text_color='black',image=icon_img,
+    compound="left",command=send_function,
+    fg_color='white',hover_color='#e0e1e2',
+    width=150,height=50,
+    border_color='#e0e1e2',border_width=1,corner_radius=10
+)
+send_button.place(x=210, y=150)
+# load money
+icon2_img = ctk.CTkImage(light_image=Image.open('img/icon/load.png'), size=(40, 40))
+load_button = ctk.CTkButton(
+    transaction_frame,text="Load Money",
+    font=ctk.CTkFont(size=14, weight="bold"),
+    text_color='black',image=icon2_img,
+    compound="left",command=send_function,
+    fg_color='white',hover_color='#e0e1e2',
+    width=150,height=50,
+    border_color='#e0e1e2',border_width=1,corner_radius=10
+)
+load_button.place(x=20, y=150)
+# transaction history
+icon3_img = ctk.CTkImage(light_image=Image.open('img/icon/transaction.png'), size=(40, 40))
+transaction_button = ctk.CTkButton(
+    transaction_frame,text="Transaction History",
+    font=ctk.CTkFont(size=14, weight="bold"),
+    text_color='black',image=icon3_img,
+    compound="left",command=send_function,
+    fg_color='white',hover_color='#e0e1e2',
+    width=150,height=50,
+    border_color='#e0e1e2',border_width=1,corner_radius=10
+)
+transaction_button.place(x=20, y=425)
 
+# Redeem Rewards
+icon4_img = ctk.CTkImage(light_image=Image.open('img/icon/token.png'), size=(40, 40))
+redeem_button = ctk.CTkButton(
+    transaction_frame,text="Redeem Rewards Points",
+    font=ctk.CTkFont(size=14, weight="bold"),
+    text_color='black',image=icon4_img,
+    compound="left",command=send_function,
+    fg_color='white',hover_color='#e0e1e2',
+    width=180,height=50,
+    border_color='#e0e1e2',border_width=1,corner_radius=10
+)
+redeem_button.place(x=400, y=150)
 
+# Utility and Bill Payments
+utility_label = ctk.CTkLabel(transaction_frame, text="Utility & Bill Payments", font=ctk.CTkFont(family='Segoe UI',size=20, weight="bold"), text_color='#1375d0')
+utility_label.place(x=20, y=225)
+# top up mobile
+icon5_img = ctk.CTkImage(light_image=Image.open('img/icon/topup.png'), size=(40, 40))
+topup_button = ctk.CTkButton(
+    transaction_frame,text="TopUp Mobile",
+    font=ctk.CTkFont(size=14, weight="bold"),
+    text_color='black',image=icon5_img,
+    compound="left",command=send_function,
+    fg_color='white',hover_color='#e0e1e2',
+    width=150,height=50,
+)
+topup_button.place(x=20, y=275)
+# electricity bill
+icon6_img = ctk.CTkImage(light_image=Image.open('img/icon/electricity.png'), size=(40, 40))
+electricity_button = ctk.CTkButton(
+    transaction_frame,text="Electricity Bill",
+    font=ctk.CTkFont(size=14, weight="bold"),
+    text_color='black',image=icon6_img,
+    compound="left",command=send_function,
+    fg_color='white',hover_color='#e0e1e2',
+    width=150,height=50,
+)
+electricity_button.place(x=210, y=275)
+# internet bill
+icon7_img = ctk.CTkImage(light_image=Image.open('img/icon/internet.png'), size=(40, 40))
+internet_button = ctk.CTkButton(
+    transaction_frame,text="Internet Bill",
+    font=ctk.CTkFont(size=14, weight="bold"),
+    text_color='black',image=icon7_img,
+    compound="left",command=send_function,
+    fg_color='white',hover_color='#e0e1e2',
+    width=150,height=50,
+)
+internet_button.place(x=400, y=275)
+# water bill
+icon8_img = ctk.CTkImage(light_image=Image.open('img/icon/water.png'), size=(40, 40))
+water_button = ctk.CTkButton(
+    transaction_frame,text="Water Bill",
+    font=ctk.CTkFont(size=14, weight="bold"),
+    text_color='black',image=icon8_img,
+    compound="left",command=send_function,
+    fg_color='white',hover_color='#e0e1e2',
+    width=150,height=50,
+)
+water_button.place(x=20, y=350)
+# education fee
+icon9_img = ctk.CTkImage(light_image=Image.open('img/icon/education.png'), size=(40, 40))
+education_button = ctk.CTkButton(
+    transaction_frame,text="Education Fee",
+    font=ctk.CTkFont(size=14, weight="bold"),
+    text_color='black',image=icon9_img,
+    compound="left",command=send_function,
+    fg_color='white',hover_color='#e0e1e2',
+    width=150,height=50,
+)
+education_button.place(x=210, y=350)
+# healthcare payment
+icon10_img = ctk.CTkImage(light_image=Image.open('img/icon/health.png'), size=(40, 40))
+healthcare_button = ctk.CTkButton(
+    transaction_frame,text="Healthcare Payment",
+    font=ctk.CTkFont(size=14, weight="bold"),
+    text_color='black',image=icon10_img,
+    compound="left",command=send_function,
+    fg_color='white',hover_color='#e0e1e2',
+    width=180,height=50,
+)
+healthcare_button.place(x=400, y=350)
 
 
 # Show dashboard by default
