@@ -1,7 +1,13 @@
 import customtkinter as ctk
 from tkinter import messagebox
-from PIL import ImageTk, Image
+from PIL import Image
+from customtkinter import CTkImage
 from itertools import cycle
+import smtplib
+from email.mime.text import MIMEText
+import random
+import threading
+from db_queries import DatabaseManager
 
 class PayPerksAuth:
     def __init__(self):
@@ -34,8 +40,8 @@ class PayPerksAuth:
 
     def setup_ui(self):
         # Image and Label
-        img = Image.open('img/PAYPERKS2.png').resize((250, 250))
-        self.payperks_img = ImageTk.PhotoImage(img)
+        img = Image.open('img/PAYPERKS2.png').resize((200, 200))
+        self.payperks_img = CTkImage(light_image=img, size=(200, 200))
         ctk.CTkLabel(self.window, image=self.payperks_img, text="", bg_color='white').place(x=500, y=-40)
 
         self.bg_label = ctk.CTkLabel(self.window, text="", bg_color='white')
@@ -59,9 +65,9 @@ class PayPerksAuth:
 
     def load_bg(self, index):
         bg_img = Image.open(self.bg_images[index]).resize((400, 400))
-        tk_img = ImageTk.PhotoImage(bg_img)
-        self.bg_label.configure(image=tk_img)
-        self.bg_label.image = tk_img
+        ctk_img = CTkImage(light_image=bg_img, size=(400, 400))
+        self.bg_label.configure(image=ctk_img)
+        self.bg_label.image = ctk_img
 
     def type_text(self, index=0):
         if index < len(self.text_to_type):
@@ -121,17 +127,17 @@ class PayPerksAuth:
         self.name = ctk.CTkEntry(self.signup_frame, width=300, placeholder_text="Full Name")
         self.name.place(x=30, y=50)
 
-        self.user = ctk.CTkEntry(self.signup_frame, width=300, placeholder_text="Username")
-        self.user.place(x=30, y=90)
+      #  self.user = ctk.CTkEntry(self.signup_frame, width=300, placeholder_text="Username")
+      #  self.user.place(x=30, y=90)
 
         self.code = ctk.CTkEntry(self.signup_frame, width=300, placeholder_text="Password", show="*")
-        self.code.place(x=30, y=130)
+        self.code.place(x=30, y=150)
 
         self.confirm_code = ctk.CTkEntry(self.signup_frame, width=300, placeholder_text="Confirm Password", show="*")
-        self.confirm_code.place(x=30, y=170)
+        self.confirm_code.place(x=30, y=200)
 
         self.email = ctk.CTkEntry(self.signup_frame, width=300, placeholder_text="Email")
-        self.email.place(x=30, y=210)
+        self.email.place(x=30, y=100)
 
         signup_btn = ctk.CTkButton(self.signup_frame, text="Sign Up", width=300, fg_color="#57a1f8", hover_color="#0052cc", command=self.signup)
         signup_btn.place(x=30, y=250)
@@ -142,8 +148,8 @@ class PayPerksAuth:
     def build_signin_form(self):
         ctk.CTkLabel(self.signin_frame, text='Sign In', text_color='#57a1f8', font=ctk.CTkFont(size=23, weight="bold")).place(x=25, y=10)
 
-        self.user_signin = ctk.CTkEntry(self.signin_frame, width=300, placeholder_text="Username")
-        self.user_signin.place(x=30, y=60)
+        self.email_signin = ctk.CTkEntry(self.signin_frame, width=300, placeholder_text="Email")
+        self.email_signin.place(x=30, y=60)
 
         self.code_signin = ctk.CTkEntry(self.signin_frame, width=300, placeholder_text="Password", show="*")
         self.code_signin.place(x=30, y=120)
@@ -155,21 +161,91 @@ class PayPerksAuth:
         ctk.CTkButton(self.signin_frame, width=50, text="Sign Up", fg_color="transparent", text_color="#57a1f8", hover=False, command=lambda: self.raise_frame(self.signup_frame)).place(x=145, y=230)
 
     def signup(self):
-        username = self.user.get()
+        full_name = self.name.get()
+        email = self.email.get()
         password = self.code.get()
         confirm_password = self.confirm_code.get()
-        if username == '' or password == '' or confirm_password == '':
+        self.name.delete(0,'end')
+        self.email.delete(0,'end')
+        self.code.delete(0,'end')
+        self.confirm_code.delete(0,'end')
+
+        if email == '' or password == '' or confirm_password == '':
             messagebox.showerror("Error", "All fields are required")
         elif password != confirm_password:
             messagebox.showerror("Error", "Passwords do not match")
         else:
-            messagebox.showinfo("Success", "Sign Up Successful")
+            threading.Thread(target=self.check_email_threaded,args=(email,), daemon=True).start()
+            self.popup = ctk.CTkToplevel(self.window)
+            self.popup.title("Email Verification")
+            self.popup.geometry("400x300")
+            self.popup.resizable(False, False)
+            self.popup.lift()
+            self.popup.focus_force()
+            self.popup.grab_set()
+            ctk.CTkLabel(self.popup, text="Enter Verification Code:", font=ctk.CTkFont(size=20,weight='bold'),text_color='#57a1f8').pack(pady=(30,20))
+            ctk.CTkLabel(self.popup, text="A verification code has been sent to your email.", font=ctk.CTkFont(size=12)).pack(pady=0)
+            self.verify_code_entry = ctk.CTkEntry(self.popup, width=200, placeholder_text="Enter Verification Code")
+            self.verify_code_entry.pack(pady=(0,20))
+            code = str(random.randint(100000, 999999))
+            threading.Thread(target=lambda: self.send_email(email, code), daemon=True).start()
+            ctk.CTkButton(self.popup, text="OK", command=lambda: self.verify_code(code,full_name,email,password)).pack(pady=10)
+
+    def send_email(self, recipient,code):
+        sender_email = "payperks@zohomail.com"
+        password = "freefire00"
+        msg = MIMEText("Your verification code is: " + str(code))
+        msg['Subject'] = 'PayPerks Verification Code'
+        msg['From'] = sender_email
+        msg['To'] = recipient
+        for attempt in range(2):
+            try:
+                server = smtplib.SMTP_SSL('smtp.zoho.com', 465)
+                server.login(sender_email, password)
+                server.send_message(msg)
+                server.quit()
+                break
+            except Exception as e:
+                print("Email send failed:", e)
+
+    def verify_code(self,code,full_name,email,password):
+        entered_code = self.verify_code_entry.get()
+        if code == entered_code:
+            messagebox.showinfo("Success", "Successfully Registered!")
+            self.popup.destroy()
+            db = DatabaseManager()
+            db.create_user_table()
+            db.create_transactions_table()
+            db.create_rewards_table()
+            db.create_deposits_or_payments_table()
+            db.register_user(full_name,email,password)
+            db.close()
+        else:
+            messagebox.showerror("Error", "Invalid verification code. Please try again.")
+        self.popup.destroy()
+
+    def check_email_threaded(self,email):
+        db = DatabaseManager()
+        if db.email_exists(email):
+            self.window.after(0,lambda:(self.popup.destroy()))
+            messagebox.showerror('Error', 'Email is already registered!')   
+
 
     def signin(self):
-        username = self.user_signin.get()
+        email = self.email_signin.get()
         password = self.code_signin.get()
-        if username == '' or password == '':
+        self.email_signin.delete(0,'end')
+        self.code_signin.delete(0,'end')
+
+        if email == '' or password == '':
             messagebox.showerror("Error", "All fields are required")
         else:
-            messagebox.showinfo("Success", f"Welcome back, {username}!")
+            db = DatabaseManager()
+            if db.authenticate_user(email,password):
+                messagebox.showinfo('Success','Singned in successfully')
+            else:
+                messagebox.showerror('Error','Invalid email or password')
+            db.close()
+
+
 
