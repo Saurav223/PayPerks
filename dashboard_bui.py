@@ -4,395 +4,252 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from PIL import Image
 import random
 
-# Window setup
-ctk.set_appearance_mode("light")
-ctk.set_default_color_theme("blue")
-window = ctk.CTk(fg_color="white")
-window.title('PayPerks Dashboard')
-window.geometry('925x500')
-window.resizable(False, False)
+class PayPerksDashboard:
+    def __init__(self):
+        # Window setup
+        ctk.set_appearance_mode("light")
+        ctk.set_default_color_theme("blue")
+        self.window = ctk.CTk(fg_color="white")
+        self.window.title('PayPerks Dashboard')
+        self.window.geometry('925x500')
+        self.window.resizable(False, False)
 
-# Function
-def show_dashboard():
-    dashboard_frame.place(x=200, y=0)
-    settings_frame.place_forget()
-    transaction_frame.place_forget()
+        self.ACTIVE_COLOR = '#4899f0'
+        self.INACTIVE_COLOR = '#1375d0'
+        self.sidebar_buttons = {}
+        self.button_font = ctk.CTkFont(family='Segoe UI', size=17, weight='bold')
 
-def show_transactions():
-    transaction_frame.place(x=200, y=0)
-    dashboard_frame.place_forget()
-    settings_frame.place_forget()
+        # Initialize frames
+        self.dashboard_frame = ctk.CTkFrame(self.window, fg_color='white', width=725, height=500)
+        self.transaction_frame = ctk.CTkFrame(self.window, fg_color='white', width=725, height=500)
+        self.settings_frame = ctk.CTkScrollableFrame(self.window, fg_color='white', width=725, height=500)
 
-def show_settings():
-    settings_frame.place(x=200, y=0)
-    dashboard_frame.place_forget()
-    transaction_frame.place_forget()
+        self.setup_sidebar()
+        self.setup_dashboard()
+        self.setup_transactions()
+        self.setup_settings()
+        
+        # Show dashboard by default
+        self.show_dashboard()
 
+    def set_active(self, btn_name):
+        for name, btn in self.sidebar_buttons.items():
+            btn.configure(fg_color=self.ACTIVE_COLOR if name == btn_name else self.INACTIVE_COLOR)
 
-# Sidebar
-sidebar = ctk.CTkFrame(window, fg_color='#1375d0', width=200,corner_radius=0)
-sidebar.pack(side='left', fill='y', padx=(0, 10))
-sidebar.pack_propagate(False)
-button_font = ctk.CTkFont(family='Segoe UI', size=17, weight='bold')
-sidebar_buttons = {}
-ACTIVE_COLOR = '#4899f0'
-INACTIVE_COLOR = '#1375d0'
+    def show_dashboard(self):
+        self.dashboard_frame.place(x=200, y=0)
+        self.settings_frame.place_forget()
+        self.transaction_frame.place_forget()
+        self.set_active('dashboard')
 
-def set_active(btn_name):
-    for name, btn in sidebar_buttons.items():
-        if name == btn_name:
-            btn.configure(fg_color=ACTIVE_COLOR)
-        else:
-            btn.configure(fg_color=INACTIVE_COLOR)
+    def show_transactions(self):
+        self.transaction_frame.place(x=200, y=0)
+        self.dashboard_frame.place_forget()
+        self.settings_frame.place_forget()
+        self.set_active('transactions')
 
-def dashboard_clicked():
-    set_active('dashboard')
-    show_dashboard()
+    def show_settings(self):
+        self.settings_frame.place(x=200, y=0)
+        self.dashboard_frame.place_forget()
+        self.transaction_frame.place_forget()
+        self.set_active('settings')
 
-def transactions_clicked():
-    set_active('transactions')
-    show_transactions()
+    def setup_sidebar(self):
+        sidebar = ctk.CTkFrame(self.window, fg_color='#1375d0', width=200, corner_radius=0)
+        sidebar.pack(side='left', fill='y', padx=(0, 10))
+        sidebar.pack_propagate(False)
 
-def settings_clicked():
-    set_active('settings')
-    show_settings()
+        buttons = [
+            ('Dashboard', self.show_dashboard, self.ACTIVE_COLOR),
+            ('Transactions', self.show_transactions, self.INACTIVE_COLOR),
+            ('Settings', self.show_settings, self.INACTIVE_COLOR)
+        ]
 
-# Dashboard Button
-dashboard_btn = ctk.CTkButton(sidebar, text='Dashboard', font=button_font,height=40, 
-                              fg_color=ACTIVE_COLOR, hover_color=ACTIVE_COLOR,
-                              text_color='white', corner_radius=8,
-                              command=dashboard_clicked)
-dashboard_btn.pack(fill='x', padx=20, pady=(20, 5))
-sidebar_buttons['dashboard'] = dashboard_btn
+        for name, command, color in buttons:
+            btn = ctk.CTkButton(
+                sidebar, text=name, font=self.button_font, height=40,
+                fg_color=color, hover_color=self.ACTIVE_COLOR,
+                text_color='white', corner_radius=8, command=command
+            )
+            btn.pack(fill='x', padx=20, pady=5)
+            self.sidebar_buttons[name.lower()] = btn
 
-# Transactions Button
-transactions_btn = ctk.CTkButton(sidebar, text='Transactions', font=button_font,height=40,
-                                 fg_color=INACTIVE_COLOR, hover_color=ACTIVE_COLOR,
-                                 text_color='white', corner_radius=8,
-                                 command=transactions_clicked)
-transactions_btn.pack(fill='x', padx=20, pady=5)
-sidebar_buttons['transactions'] = transactions_btn
+    def setup_dashboard(self):
+        # User icon
+        user_img = ['img/user_icon/user1.png', 'img/user_icon/user2.png', 'img/user_icon/user3.png', 
+                    'img/user_icon/user4.png', 'img/user_icon/user5.png']
+        user_icon = ctk.CTkImage(light_image=Image.open(random.choice(user_img)), size=(50, 50))
+        ctk.CTkLabel(self.dashboard_frame, image=user_icon, text="").place(x=20, y=50)
 
-# Settings Button
-settings_btn = ctk.CTkButton(sidebar, text='Settings', font=button_font,height=40,
-                             fg_color=INACTIVE_COLOR, hover_color=ACTIVE_COLOR,
-                             text_color='white', corner_radius=8,
-                             command=settings_clicked)
-settings_btn.pack(fill='x', padx=20, pady=5)
-sidebar_buttons['settings'] = settings_btn
+        # Welcome label
+        ctk.CTkLabel(self.dashboard_frame, text="Welcome! Saurav Subedi", 
+                    font=ctk.CTkFont(size=20, weight="bold")).place(x=80, y=65)
 
+        # PayPerks Logo
+        logo_img = ctk.CTkImage(light_image=Image.open('img/PAYPERKS2.png'), size=(250, 250))
+        ctk.CTkLabel(self.dashboard_frame, image=logo_img, text="").place(x=400, y=-50)
 
+        # Card configurations
+        cards = [
+            ("Balance", "$1000.00", 360, 150),
+            ("Income", "$500.00", 360, 250),
+            ("Expense", "$300.00", 360, 350),
+            ("Reward Points", "200.00", 20, 150)
+        ]
 
-# Dashboard Frame
-dashboard_frame = ctk.CTkFrame(window, fg_color='white', width=725, height=500)
-dashboard_frame.place(x=200, y=0)
-Label = ctk.CTkLabel(dashboard_frame, text="Welcome! Saurav Subedi", font=ctk.CTkFont(size=20, weight="bold"))
-Label.place(x=80, y=65)
-# User Icon
-user_img = ['img/user_icon/user1.png', 'img/user_icon/user2.png', 'img/user_icon/user3.png', 'img/user_icon/user4.png', 'img/user_icon/user5.png']
-random_user_img = random.choice(user_img)
-user_icon = ctk.CTkImage(light_image=Image.open(random_user_img),size=(50, 50))
-user_icon_label = ctk.CTkLabel(dashboard_frame, image=user_icon, text="")
-user_icon_label.place(x=20, y=50)
-# PayPerks Logo
-logo_img = ctk.CTkImage(light_image=Image.open('img/PAYPERKS2.png'), size=(250, 250))
-logo_label = ctk.CTkLabel(dashboard_frame, image=logo_img, text="")
-logo_label.place(x=400, y=-50)
+        for title, amount, x, y in cards:
+            card = ctk.CTkFrame(self.dashboard_frame, width=300, height=80, fg_color='white', 
+                              border_color='#e0e1e2', border_width=2, corner_radius=10)
+            card.place(x=x, y=y)
+            ctk.CTkLabel(card, text=title, font=ctk.CTkFont(size=15, weight="bold"), 
+                        text_color='#1375d0', bg_color='transparent').place(x=20, y=5)
+            ctk.CTkLabel(card, text=amount, font=ctk.CTkFont(size=28, weight="bold"), 
+                        text_color='#222', bg_color='transparent').place(x=20, y=30)
 
-# Balance Frame and Labels
-balance_card = ctk.CTkFrame(dashboard_frame, width=300, height=80, fg_color='white', border_color='#e0e1e2', border_width=2, corner_radius=10)
-balance_card.place(x=360, y=150)
-balance_text_label = ctk.CTkLabel(balance_card, text="Balance", font=ctk.CTkFont(size=15, weight="bold"), text_color='#1375d0', bg_color='transparent')
-balance_text_label.place(x=20, y=5)
-amount_label = ctk.CTkLabel(balance_card, text="$1000.00", font=ctk.CTkFont(size=28, weight="bold"), text_color='#222', bg_color='transparent')
-amount_label.place(x=20, y=30)
+        # Recent activity
+        recent_activity_card = ctk.CTkFrame(self.dashboard_frame, width=300, height=220, 
+                                          fg_color='white', border_color='#e0e1e2', 
+                                          border_width=2, corner_radius=10)
+        recent_activity_card.place(x=20, y=250)
+        ctk.CTkLabel(recent_activity_card, text="Recent Activity", 
+                    font=ctk.CTkFont(size=15, weight="bold"), 
+                    text_color='#1375d0', bg_color='transparent').place(x=20, y=5)
 
-# INcome frame and Labels
-income_card = ctk.CTkFrame(dashboard_frame, width=300, height=80, fg_color='white', border_color='#e0e1e2', border_width=2, corner_radius=10)
-income_card.place(x=360, y=250)
-income_text_label = ctk.CTkLabel(income_card, text="Income", font=ctk.CTkFont(size=15, weight="bold"), text_color='#1375d0', bg_color='transparent')
-income_text_label.place(x=20, y=5)  
-income_amount_label = ctk.CTkLabel(income_card, text="$500.00", font=ctk.CTkFont(size=28, weight="bold"), text_color='#222', bg_color='transparent')
-income_amount_label.place(x=20, y=30)
+        # Matplotlib graph
+        fig = Figure(figsize=(3.6, 2.3), dpi=100)
+        ax = fig.add_subplot(111)
+        ax.plot([1, 2, 3, 4, 5], [1000, 2000, 1500, 2500, 1000], marker='o', color='#4899f0')
+        ax.set_xlabel('Day', fontsize=8)
+        ax.set_ylabel('Amount', fontsize=8)
+        ax.tick_params(axis='both', labelsize=8)
+        fig.tight_layout(pad=1)
 
-# Expense frame and Labels
-expense_card = ctk.CTkFrame(dashboard_frame, width=300, height=80, fg_color='white', border_color='#e0e1e2', border_width=2, corner_radius=10)
-expense_card.place(x=360, y=350)    
-expense_text_label = ctk.CTkLabel(expense_card, text="Expense", font=ctk.CTkFont(size=15, weight="bold"), text_color='#1375d0', bg_color='transparent')
-expense_text_label.place(x=20, y=5) 
-expense_amount_label = ctk.CTkLabel(expense_card, text="$300.00", font=ctk.CTkFont(size=28, weight="bold"), text_color='#222', bg_color='transparent')
-expense_amount_label.place(x=20, y=30)
+        canvas = FigureCanvasTkAgg(fig, master=recent_activity_card)
+        canvas.draw()
+        canvas.get_tk_widget().place(x=10, y=35)
 
-# Reward frame and Labels
-reward_card = ctk.CTkFrame(dashboard_frame, width=300, height=80, fg_color='white', border_color='#e0e1e2', border_width=2, corner_radius=10)
-reward_card.place(x=20, y=150)
-reward_text_label = ctk.CTkLabel(reward_card, text="Reward Points", font=ctk.CTkFont(size=15, weight="bold"), text_color='#1375d0', bg_color='transparent')
-reward_text_label.place(x=20, y=5)  
-reward_amount_label = ctk.CTkLabel(reward_card, text="200.00", font=ctk.CTkFont(size=28, weight="bold"), text_color='#222', bg_color='transparent')
-reward_amount_label.place(x=20, y=30)
+    def change_password(self):
+        popup = ctk.CTkToplevel(self.window)
+        popup.title("Change Password")
+        popup.geometry("400x400")
+        popup.resizable(False, False)
+        popup.lift()
+        popup.focus_force()
+        popup.grab_set()
 
+        ctk.CTkLabel(popup, text="Change Password", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=10)
+        
+        labels = ["Current Password:", "New Password:", "Confirm New Password:"]
+        entries = []
+        for label in labels:
+            ctk.CTkLabel(popup, text=label).pack(pady=5)
+            entry = ctk.CTkEntry(popup, width=300, show="*")
+            entry.pack(pady=5)
+            entries.append(entry)
 
-# Recent activity frame and Labels
-recent_activity_card = ctk.CTkFrame(dashboard_frame, width=300, height=220, fg_color='white', border_color='#e0e1e2', border_width=2, corner_radius=10)
-recent_activity_card.place(x=20, y=250)
-recent_activity_label = ctk.CTkLabel(recent_activity_card, text="Recent Activity", font=ctk.CTkFont(size=15, weight="bold"), text_color='#1375d0', bg_color='transparent')
-recent_activity_label.place(x=20, y=5)
+        def submit_change():
+            current_password, new_password, confirm_password = [entry.get() for entry in entries]
+            if new_password == confirm_password:
+                print("Password changed successfully!")
+                popup.destroy()
+            else:
+                print("Passwords do not match!")  # Note: CTkMessageBox not available in standard customtkinter
 
-# --- matplotlib graph ---
-fig = Figure(figsize=(3.6, 2.3), dpi=100)
-ax = fig.add_subplot(111)
-ax.plot([1, 2, 3, 4, 5], [1000, 2000, 1500, 2500, 1000], marker='o', color='#4899f0')
-ax.set_xlabel('Day', fontsize=8)
-ax.set_ylabel('Amount', fontsize=8)
-ax.tick_params(axis='both', labelsize=8)
-fig.tight_layout(pad=1)
+        ctk.CTkButton(popup, text="Submit", command=submit_change).pack(pady=20)
 
-canvas = FigureCanvasTkAgg(fig, master=recent_activity_card)
-canvas.draw()
-canvas.get_tk_widget().place(x=10, y=35)
+    def setup_settings(self):
+        # Profile Section
+        profile_frame = ctk.CTkFrame(self.settings_frame, fg_color='white', 
+                                   border_color='#e0e1e2', border_width=2, corner_radius=10)
+        profile_frame.pack(pady=10, padx=10, fill='x')
+        
+        ctk.CTkLabel(profile_frame, text="Profile Settings", 
+                    font=ctk.CTkFont(size=20, weight="bold"), text_color='#1375d0').pack(anchor='w', padx=20, pady=(10, 5))
 
-# Setting Functions
-def change_password():
-    popup = ctk.CTkToplevel(window)
-    popup.title("Change Password")
-    popup.geometry("400x400")
-    popup.resizable(False, False)
-    popup.lift()
-    popup.focus_force()
-    popup.grab_set()
-    # labels and entries
-    ctk.CTkLabel(popup, text="Change Password", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=10)
-    ctk.CTkLabel(popup, text="Current Password:").pack(pady=5)
-    current_password_entry = ctk.CTkEntry(popup, width=300, show="*")
-    current_password_entry.pack(pady=5)
-    ctk.CTkLabel(popup, text="New Password:").pack(pady=5)
-    new_password_entry = ctk.CTkEntry(popup, width=300, show="*")
-    new_password_entry.pack(pady=5)
-    ctk.CTkLabel(popup, text="Confirm New Password:").pack(pady=5)
-    confirm_password_entry = ctk.CTkEntry(popup, width=300, show="*")
-    confirm_password_entry.pack(pady=5)
-    def submit_change():
-        current_password = current_password_entry.get()
-        new_password = new_password_entry.get()
-        confirm_password = confirm_password_entry.get()
-        if new_password == confirm_password:
-            # Here you would add logic to change the password
-            print("Password changed successfully!")
-            popup.destroy()
-        else:
-            ctk.CTkMessageBox.show_error("Passwords do not match!")
-    submit_btn = ctk.CTkButton(popup, text="Submit", command=submit_change)
-    submit_btn.pack(pady=20)
-    
+        profile_data = [("Full Name:", "John Doe"), ("Username:", "johndoe123"), ("Email:", "johndoe123@gmail.com")]
+        for label_text, value in profile_data:
+            ctk.CTkLabel(profile_frame, text=label_text, font=ctk.CTkFont(size=16), 
+                        text_color='#222').pack(anchor='w', padx=20)
+            frame = ctk.CTkFrame(profile_frame, height=35, border_color='#e0e1e2', 
+                               border_width=1, corner_radius=5, fg_color='white')
+            frame.pack(padx=20, pady=(0, 10), fill='x')
+            ctk.CTkLabel(frame, text=value, font=ctk.CTkFont(size=18), 
+                        text_color='#222').pack(anchor='w', padx=10, pady=5)
 
+        # Security Section
+        security_frame = ctk.CTkFrame(self.settings_frame, fg_color='white', 
+                                    border_color='#e0e1e2', border_width=2, corner_radius=10)
+        security_frame.pack(pady=10, padx=10, fill='x')
+        ctk.CTkLabel(security_frame, text="Security Settings", 
+                    font=ctk.CTkFont(size=20, weight="bold"), 
+                    text_color='#1375d0').pack(anchor='w', padx=20, pady=(10, 5))
+        ctk.CTkButton(security_frame, text="Change Password", font=ctk.CTkFont(size=16),
+                     width=200, height=40, fg_color='#4899f0', hover_color='#0052cc',
+                     command=self.change_password).pack(padx=20, pady=(10, 20), anchor='w')
 
+        # Notifications Section
+        notifications_frame = ctk.CTkFrame(self.settings_frame, fg_color='white', 
+                                         border_color='#e0e1e2', border_width=2, corner_radius=10)
+        notifications_frame.pack(pady=10, padx=10, fill='x')
+        ctk.CTkLabel(notifications_frame, text="Notification Settings", 
+                    font=ctk.CTkFont(size=20, weight="bold"), 
+                    text_color='#1375d0').pack(anchor='w', padx=20, pady=(10, 5))
+        ctk.CTkSwitch(notifications_frame, text="Enable Email Notifications", 
+                     font=ctk.CTkFont(size=16), 
+                     command=lambda: print("Notifications toggled")).pack(anchor='w', padx=20, pady=(0, 10))
 
-# --- Setting Frame ---
-settings_frame = ctk.CTkScrollableFrame(window, fg_color='white', width=725, height=500)
-settings_frame.place(x=200, y=0)
+        # Support Section
+        support_frame = ctk.CTkFrame(self.settings_frame, fg_color='white', 
+                                   border_color='#e0e1e2', border_width=2, corner_radius=10)
+        support_frame.pack(pady=10, padx=10, fill='x')
+        ctk.CTkLabel(support_frame, text="Support and Feedback", 
+                    font=ctk.CTkFont(size=20, weight="bold"), 
+                    text_color='#1375d0').pack(anchor='w', padx=20, pady=(10, 5))
+        ctk.CTkLabel(support_frame, text="For any issues or feedback, please contact us at").pack(anchor='w', padx=20, pady=(0, 10))
+        ctk.CTkButton(support_frame, text="Contact Support", font=ctk.CTkFont(size=16),
+                     width=200, height=40, fg_color='#4899f0', hover_color='#0052cc',
+                     command=lambda: print("Contact Support Clicked")).pack(padx=20, pady=(0, 10), anchor='w')
 
-### ---- Profile Section ---- ###
-profile_frame = ctk.CTkFrame(settings_frame, fg_color='white', border_color='#e0e1e2', border_width=2, corner_radius=10)
-profile_frame.pack(pady=10, padx=10, fill='x')
+    def send_function(self):
+        print("Send Money Function Triggered")
 
-profile_label = ctk.CTkLabel(profile_frame, text="Profile Settings", font=ctk.CTkFont(size=20, weight="bold"), text_color='#1375d0')
-profile_label.pack(anchor='w', padx=20, pady=(10, 5))
+    def setup_transactions(self):
+        ctk.CTkLabel(self.transaction_frame, text="Transactions", 
+                    font=ctk.CTkFont(family='Segoe UI', size=45, weight="bold"), 
+                    text_color='#1375d0').place(x=80, y=65)
 
-# Full Name
-full_name_label = ctk.CTkLabel(profile_frame, text="Full Name:", font=ctk.CTkFont(size=16), text_color='#222')
-full_name_label.pack(anchor='w', padx=20)
+        logo_img = ctk.CTkImage(light_image=Image.open('img/PAYPERKS2.png'), size=(250, 250))
+        ctk.CTkLabel(self.transaction_frame, image=logo_img, text="").place(x=400, y=-50)
 
-name_label_frame = ctk.CTkFrame(profile_frame, height=35, border_color='#e0e1e2', border_width=1, corner_radius=5, fg_color='white')
-name_label_frame.pack(padx=20, pady=(0, 10), fill='x')
-name_label = ctk.CTkLabel(name_label_frame, text="John Doe", font=ctk.CTkFont(size=18), text_color='#222')
-name_label.pack(anchor='w', padx=10, pady=5)
+        buttons = [
+            ("Send Money", 'img/icon/send.png', 210, 150, 150),
+            ("Load Money", 'img/icon/load.png', 20, 150, 150),
+            ("Transaction History", 'img/icon/transaction.png', 20, 425, 150),
+            ("Redeem Rewards Points", 'img/icon/token.png', 400, 150, 180),
+            ("TopUp Mobile", 'img/icon/topup.png', 20, 275, 150),
+            ("Electricity Bill", 'img/icon/electricity.png', 210, 275, 150),
+            ("Internet Bill", 'img/icon/internet.png', 400, 275, 150),
+            ("Water Bill", 'img/icon/water.png', 20, 350, 150),
+            ("Education Fee", 'img/icon/education.png', 210, 350, 150),
+            ("Healthcare Payment", 'img/icon/health.png', 400, 350, 180)
+        ]
 
-# Username
-username_label = ctk.CTkLabel(profile_frame, text="Username:", font=ctk.CTkFont(size=16), text_color='#222')
-username_label.pack(anchor='w', padx=20)
+        for text, icon_path, x, y, width in buttons:
+            icon = ctk.CTkImage(light_image=Image.open(icon_path), size=(40, 40))
+            ctk.CTkButton(
+                self.transaction_frame, text=text, font=ctk.CTkFont(size=14, weight="bold"),
+                text_color='black', image=icon, compound="left", command=self.send_function,
+                fg_color='white', hover_color='#e0e1e2', width=width, height=50,
+                border_color='#e0e1e2', border_width=1, corner_radius=10
+            ).place(x=x, y=y)
 
-username_label_frame = ctk.CTkFrame(profile_frame, height=35, border_color='#e0e1e2', border_width=1, corner_radius=5, fg_color='white')
-username_label_frame.pack(padx=20, pady=(0, 10), fill='x')
-username_label = ctk.CTkLabel(username_label_frame, text="johndoe123", font=ctk.CTkFont(size=18), text_color='#222')
-username_label.pack(anchor='w', padx=10, pady=5)
+        ctk.CTkLabel(self.transaction_frame, text="Utility & Bill Payments", 
+                    font=ctk.CTkFont(family='Segoe UI', size=20, weight="bold"), 
+                    text_color='#1375d0').place(x=20, y=225)
 
-# Email
-email_label = ctk.CTkLabel(profile_frame, text="Email:", font=ctk.CTkFont(size=16), text_color='#222')
-email_label.pack(anchor='w', padx=20)
+    def run(self):
+        self.window.mainloop()
 
-email_label_frame = ctk.CTkFrame(profile_frame, height=35, border_color='#e0e1e2', border_width=1, corner_radius=5, fg_color='white')
-email_label_frame.pack(padx=20, pady=(0, 10), fill='x')
-email_label = ctk.CTkLabel(email_label_frame, text="johndoe123@gmail.com", font=ctk.CTkFont(size=18), text_color='#222')
-email_label.pack(anchor='w', padx=10, pady=5)
-
-### ---- Security Section ---- ###
-security_frame = ctk.CTkFrame(settings_frame, fg_color='white', border_color='#e0e1e2', border_width=2, corner_radius=10)
-security_frame.pack(pady=10, padx=10, fill='x')
-
-security_label = ctk.CTkLabel(security_frame, text="Security Settings", font=ctk.CTkFont(size=20, weight="bold"), text_color='#1375d0')
-security_label.pack(anchor='w', padx=20, pady=(10, 5))
-
-change_password_btn = ctk.CTkButton(security_frame, text="Change Password", font=ctk.CTkFont(size=16),
-                                     width=200, height=40, fg_color='#4899f0', hover_color='#0052cc',
-                                     command=change_password)
-change_password_btn.pack(padx=20, pady=(10, 20), anchor='w')
-
-# Notifications 
-notifications_frame = ctk.CTkFrame(settings_frame, fg_color='white', border_color='#e0e1e2', border_width=2, corner_radius=10)
-notifications_frame.pack(pady=10, padx=10, fill='x')    
-notifications_label = ctk.CTkLabel(notifications_frame, text="Notification Settings", font=ctk.CTkFont(size=20, weight="bold"), text_color='#1375d0')
-notifications_label.pack(anchor='w', padx=20, pady=(10, 5))
-# Add a toggle switch for notifications
-notifications_switch = ctk.CTkSwitch(notifications_frame, text="Enable Email Notifications", font=ctk.CTkFont(size=16), 
-                                        command=lambda: print("Notifications toggled"))
-notifications_switch.pack(anchor='w', padx=20, pady=(0, 10))
-
-# Support and Feedback
-support_frame = ctk.CTkFrame(settings_frame, fg_color='white', border_color='#e0e1e2', border_width=2, corner_radius=10)
-support_frame.pack(pady=10, padx=10, fill='x')
-support_label = ctk.CTkLabel(support_frame, text="Support and Feedback", font=ctk.CTkFont(size=20, weight="bold"), text_color='#1375d0')
-support_label.pack(anchor='w', padx=20, pady=(10, 5))
-support_text = ctk.CTkLabel(support_frame, text="For any issues or feedback, please contact us at")
-support_text.pack(anchor='w', padx=20, pady=(0, 10))
-# Add a contact button
-contact_btn = ctk.CTkButton(support_frame, text="Contact Support", font=ctk.CTkFont(size=16),
-                             width=200, height=40, fg_color='#4899f0', hover_color='#0052cc',
-                             command=lambda: print("Contact Support Clicked"))
-contact_btn.pack(padx=20, pady=(0, 10), anchor='w')
-
-# transaction function
-def send_function():
-    print("Send Money Function Triggered")
-
-#---Transaction Frame---#
-transaction_frame = ctk.CTkFrame(window, fg_color='white', width=725, height=500)
-transaction_frame.place(x=200, y=0)
-# Transaction Label
-transaction_label = ctk.CTkLabel(transaction_frame, text="Transactions", font=ctk.CTkFont(family='Segoe UI',size=45, weight="bold"), text_color='#1375d0')
-transaction_label.place(x=80, y=65)
-logo_label = ctk.CTkLabel(transaction_frame, image=logo_img, text="")
-logo_label.place(x=400, y=-50)
-# send money 
-icon_img = ctk.CTkImage(light_image=Image.open('img/icon/send.png'), size=(40, 40))
-send_button = ctk.CTkButton(
-    transaction_frame,text="Send Money",
-    font=ctk.CTkFont(size=14, weight="bold"),
-    text_color='black',image=icon_img,
-    compound="left",command=send_function,
-    fg_color='white',hover_color='#e0e1e2',
-    width=150,height=50,
-    border_color='#e0e1e2',border_width=1,corner_radius=10
-)
-send_button.place(x=210, y=150)
-# load money
-icon2_img = ctk.CTkImage(light_image=Image.open('img/icon/load.png'), size=(40, 40))
-load_button = ctk.CTkButton(
-    transaction_frame,text="Load Money",
-    font=ctk.CTkFont(size=14, weight="bold"),
-    text_color='black',image=icon2_img,
-    compound="left",command=send_function,
-    fg_color='white',hover_color='#e0e1e2',
-    width=150,height=50,
-    border_color='#e0e1e2',border_width=1,corner_radius=10
-)
-load_button.place(x=20, y=150)
-# transaction history
-icon3_img = ctk.CTkImage(light_image=Image.open('img/icon/transaction.png'), size=(40, 40))
-transaction_button = ctk.CTkButton(
-    transaction_frame,text="Transaction History",
-    font=ctk.CTkFont(size=14, weight="bold"),
-    text_color='black',image=icon3_img,
-    compound="left",command=send_function,
-    fg_color='white',hover_color='#e0e1e2',
-    width=150,height=50,
-    border_color='#e0e1e2',border_width=1,corner_radius=10
-)
-transaction_button.place(x=20, y=425)
-
-# Redeem Rewards
-icon4_img = ctk.CTkImage(light_image=Image.open('img/icon/token.png'), size=(40, 40))
-redeem_button = ctk.CTkButton(
-    transaction_frame,text="Redeem Rewards Points",
-    font=ctk.CTkFont(size=14, weight="bold"),
-    text_color='black',image=icon4_img,
-    compound="left",command=send_function,
-    fg_color='white',hover_color='#e0e1e2',
-    width=180,height=50,
-    border_color='#e0e1e2',border_width=1,corner_radius=10
-)
-redeem_button.place(x=400, y=150)
-
-# Utility and Bill Payments
-utility_label = ctk.CTkLabel(transaction_frame, text="Utility & Bill Payments", font=ctk.CTkFont(family='Segoe UI',size=20, weight="bold"), text_color='#1375d0')
-utility_label.place(x=20, y=225)
-# top up mobile
-icon5_img = ctk.CTkImage(light_image=Image.open('img/icon/topup.png'), size=(40, 40))
-topup_button = ctk.CTkButton(
-    transaction_frame,text="TopUp Mobile",
-    font=ctk.CTkFont(size=14, weight="bold"),
-    text_color='black',image=icon5_img,
-    compound="left",command=send_function,
-    fg_color='white',hover_color='#e0e1e2',
-    width=150,height=50,
-)
-topup_button.place(x=20, y=275)
-# electricity bill
-icon6_img = ctk.CTkImage(light_image=Image.open('img/icon/electricity.png'), size=(40, 40))
-electricity_button = ctk.CTkButton(
-    transaction_frame,text="Electricity Bill",
-    font=ctk.CTkFont(size=14, weight="bold"),
-    text_color='black',image=icon6_img,
-    compound="left",command=send_function,
-    fg_color='white',hover_color='#e0e1e2',
-    width=150,height=50,
-)
-electricity_button.place(x=210, y=275)
-# internet bill
-icon7_img = ctk.CTkImage(light_image=Image.open('img/icon/internet.png'), size=(40, 40))
-internet_button = ctk.CTkButton(
-    transaction_frame,text="Internet Bill",
-    font=ctk.CTkFont(size=14, weight="bold"),
-    text_color='black',image=icon7_img,
-    compound="left",command=send_function,
-    fg_color='white',hover_color='#e0e1e2',
-    width=150,height=50,
-)
-internet_button.place(x=400, y=275)
-# water bill
-icon8_img = ctk.CTkImage(light_image=Image.open('img/icon/water.png'), size=(40, 40))
-water_button = ctk.CTkButton(
-    transaction_frame,text="Water Bill",
-    font=ctk.CTkFont(size=14, weight="bold"),
-    text_color='black',image=icon8_img,
-    compound="left",command=send_function,
-    fg_color='white',hover_color='#e0e1e2',
-    width=150,height=50,
-)
-water_button.place(x=20, y=350)
-# education fee
-icon9_img = ctk.CTkImage(light_image=Image.open('img/icon/education.png'), size=(40, 40))
-education_button = ctk.CTkButton(
-    transaction_frame,text="Education Fee",
-    font=ctk.CTkFont(size=14, weight="bold"),
-    text_color='black',image=icon9_img,
-    compound="left",command=send_function,
-    fg_color='white',hover_color='#e0e1e2',
-    width=150,height=50,
-)
-education_button.place(x=210, y=350)
-# healthcare payment
-icon10_img = ctk.CTkImage(light_image=Image.open('img/icon/health.png'), size=(40, 40))
-healthcare_button = ctk.CTkButton(
-    transaction_frame,text="Healthcare Payment",
-    font=ctk.CTkFont(size=14, weight="bold"),
-    text_color='black',image=icon10_img,
-    compound="left",command=send_function,
-    fg_color='white',hover_color='#e0e1e2',
-    width=180,height=50,
-)
-healthcare_button.place(x=400, y=350)
-
-
-# Show dashboard by default
-dashboard_frame.tkraise()
-window.mainloop()
+if __name__ == "__main__":
+    app = PayPerksDashboard()
+    app.run()
